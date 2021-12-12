@@ -304,18 +304,49 @@ void demodulation()
 void decoder()
 { 
 	//用到两个矩阵
-	//一个累计错误，另一个记录ID
-	//不能取的边用2*message_length+1代替，因为绝对不能可能错的比本身的长度还大
-
-	//
+	//一个累计距离，另一个记录ID
+	//不能取的边（无穷大）用2*message_length+1代替，因为绝对不能可能错的比本身的长度还大
+	//难题是，怎么判断该边是否存在
+	//解决方法：全部节点的累计初始值都射程郑无穷，并且计算到最后的时候直接铲到最后以列，从00的位置开始回溯即可
+	//但是仍然第一列还是要特殊处理以下
 	int inf=2*message_length+1;
-	int path_metrics_table[4][message_length+1];
-	path_metrics_table[1][0]=inf;
-	path_metrics_table[2][0]=inf;
-	path_metrics_table[3][0]=inf;
-	path_metrics_table[3][1]=inf;
+	int path_metrics_table[4][message_length+1]; //累计距离矩阵
+	int trellis_trans_ID_table[4][message_length]; 	//ID记录矩阵
+	//初始化累计错误全部设成无穷
+	for(int i=0;i<4;i++){for(int j=0;j<message_length+1;j++) path_metrics_table[i][j]=inf;}
+	//初始化刚开始的00节点的累计是0
+	path_metrics_table[0][0]=0;
 
-	int trellis_trans_ID_table[4][message_length];
+
+
+	//decode！
+	//按接收符号两个两个来比较
+	for(int i=0;i<message_length;i++)
+	{
+		int rx_bit=re_codeword[2*i+1]<<1+re_codeword[2*i];//组装成一个数
+		for(int id=0;id<8;id++) 	//8条边按顺序比较，把结果放在下一个节点上，值小的放上去
+		{
+			int next_node=state_table[id][2];
+			int this_path_output=state_table[id][3];
+			int dist=compare(this_path_output,rx_bit);
+
+			if(dist<path_metrics_table[next_node][i+1]) //当前的距离小于终点节点上已有的距离
+			{
+				path_metrics_table[next_node][i+1]=dist;
+				trellis_trans_ID_table[next_node][i]=id;
+			}
+		}
+	}
+
+	int current_trans_ID;
+	int current_node=0x00;
+	//从最后一个00开始回溯
+	for(int i=message_length-1;i>0;i--)
+	{
+		current_trans_ID=trellis_trans_ID_table[current_node][i];
+		de_message[i]=state_table[current_trans_ID][0]; //当前ID对应的输入
+		current_node=state_table[current_trans_ID][1]; //当前ID的起始点	
+	}
 
 
 
@@ -329,14 +360,6 @@ void decoder()
 	//6,8 11 D
 
 
-	//回溯需要ID和当前节点跳变到对面节点的对应关系
-
-
-	//按接收符号两个两个来比较
-
-	//8条边按顺序比较，把结果放在下一个节点上，值小的放上去
-
-	 
 }
 
 int compare(int ID/*比较的ID*/,int rx/*被比较的符号*/)
