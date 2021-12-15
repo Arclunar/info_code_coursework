@@ -22,8 +22,8 @@ If you have any question, please contact me via e-mail: wuchy28@mail2.sysu.edu.c
 using namespace std;
 
 
-#define message_length 7 //the length of message
-#define codeword_length 14 //the length of codeword
+#define message_length 10 //the length of message
+#define codeword_length 20 //the length of codeword
 float code_rate = (float)message_length / (float)codeword_length;
 
 // channel coefficient
@@ -31,12 +31,12 @@ float code_rate = (float)message_length / (float)codeword_length;
 double N0, sgm;
 
 int state_table[8][4];//state table, the size should be defined yourself
-int state_num;//the number of the state of encoder structure
+int state_num=2;//the number of the state of encoder structure
 
-int message[]={0,1,1,0,1,0,0};
+int message[message_length];
 int codeword[codeword_length];//message and codeword
-// int re_codeword[codeword_length];//the received codeword
-int re_codeword[]={0,0,1,1,1,1,0,1,0,0,1,0,1,1};
+int re_codeword[codeword_length];//the received codeword
+
 int de_message[message_length];//the decoding message
 
 double tx_symbol[codeword_length][2];//the transmitted symbols
@@ -85,13 +85,21 @@ int  main()
 #define TEST
 #ifdef TEST
 //编码
-	//encoder();
-	cout<<"message:";
-	for(int i=0;i<message_length;i++)
+	for (i = 0; i<message_length - state_num; i++)
 	{
-		cout<<message[i];
+		message[i] = rand() % 2;
 	}
+	for (i = message_length - state_num; i<message_length; i++)
+	{
+		message[i] = 0;
+	}
+
+	cout<<"message:";
+	for(int i=0;i<message_length;i++) cout<<message[i];
 	cout<<endl;
+
+	encoder();
+
 	cout<<"codeword:";
 	for(int i=0;i<codeword_length;i++)
 	{
@@ -99,20 +107,29 @@ int  main()
 	}
 	cout<<endl;
 	//调制
+	modulation();
+
 	//信道
+	SNR=0.1;
+	//channel noise
+	N0 = (1.0 / code_rate) / pow(10.0, (float)(SNR) / 10.0);
+	sgm = sqrt(N0 / 2);
+	channel();
 	// for(int i=0;i<codeword_length;i++)
 	// {
 	// 	re_codeword[i]=codeword[i];	
 	// }
+
+	cout<<endl;
+	//解调
+	demodulation();
 	cout<<"re_codeword:";
 	for(int i=0;i<codeword_length;i++)
 	{
 		cout<<re_codeword[i];
 	}
-	cout<<endl;
-	//解调
-	decoder();
 	//译码
+	decoder();
 	cout<<"de_message:";
 	for(int i=0;i<message_length;i++)
 	{
@@ -218,10 +235,10 @@ void statetable()
 	int table[8][4]={
 	{0,0b00,0b00,0b00},
 	{1,0b00,0b10,0b11},
-	{0,0b01,0b10,0b00},
-	{1,0b01,0b00,0b11},
-	{0,0b10,0b11,0b01},
-	{1,0b10,0b01,0b10},
+	{0,0b01,0b00,0b11},
+	{1,0b01,0b10,0b00},
+	{0,0b10,0b01,0b10},
+	{1,0b10,0b11,0b01},
 	{0,0b11,0b01,0b01},
 	{1,0b11,0b11,0b10}
 	};
@@ -241,27 +258,27 @@ void encoder()
 	int current_output[2];
 
 	//记录目前状态
-	enum state {A,B,C,D};  // A:00 B:10 C:01 D:11
-	state current_state=A;
+	//enum state {A,B,C,D};  // A:00 B:10 C:01 D:11
+	int current_state=0b00;
 	for(int i=0;i<message_length;i++)
 	{
 		switch (current_state)
 		{
-		case A:
-			if(message[i]==0) {current_state=A; current_output[0]=0;current_output[1]=0;}
-			else {current_state=B; current_output[0]=1;current_output[1]=1;}
+		case 0b00:
+			if(message[i]==0) {current_state=0b00; current_output[0]=0;current_output[1]=0;}
+			else {current_state=0b10; current_output[0]=1;current_output[1]=1;}
 			break;
-		case B:
-			if(message[i]==0) {current_state=C; current_output[0]=1;current_output[1]=0;}
-			else {current_state=D; current_output[0]=0;current_output[1]=1;}
+		case 0b01:
+			if(message[i]==0) {current_state=0b00; current_output[0]=1;current_output[1]=1;}
+			else {current_state=0b10; current_output[0]=0;current_output[1]=0;}
 			break;
-		case C:
-			if(message[i]==0) {current_state=A; current_output[0]=1;current_output[1]=1;}
-			else {current_state=B; current_output[0]=0;current_output[1]=0;}
+		case 0b10:
+			if(message[i]==0) {current_state=0b01; current_output[0]=1;current_output[1]=0;}
+			else {current_state=0b11; current_output[0]=0;current_output[1]=1;}
 			break;
-		case D:
-			if(message[i]==0) {current_state=C; current_output[0]=0;current_output[1]=1;}
-			else {current_state=D; current_output[0]=1;current_output[1]=0;}
+		case 0b11:
+			if(message[i]==0) {current_state=0b01; current_output[0]=0;current_output[1]=1;}
+			else {current_state=0b11; current_output[0]=1;current_output[1]=0;}
 			break;
 		default:
 			break;
@@ -366,6 +383,12 @@ void decoder()
 	//初始化刚开始的00节点的累计是0
 	path_metrics_table[0][0]=0;
 
+	//初始化边矩阵
+		for(int i=0;i<4;i++){
+		for(int j=0;j<message_length;j++) 
+			trellis_trans_ID_table[i][j]=inf;
+	}
+
 
 
 	//decode！
@@ -427,10 +450,6 @@ void decoder()
 	for(int i=message_length-1;i>=0;i--)
 	{
 		current_trans_ID=trellis_trans_ID_table[current_node][i];
-
-		//cout<<"current transition ID"<<current_trans_ID<<endl;
-		//cout<<"current_node"<<current_node<<endl;
-
 		de_message[i]=state_table[current_trans_ID][0]; //当前ID对应的输入
 		current_node=state_table[current_trans_ID][1]; //更新当前ID的起始点	
 	}
