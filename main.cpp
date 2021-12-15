@@ -17,27 +17,26 @@ If you have any question, please contact me via e-mail: wuchy28@mail2.sysu.edu.c
 #include<string.h>
 #include<iostream>
 #include<limits.h>
+#include <iomanip>
 
 using namespace std;
 
 
-
-
-#define message_length 8 //the length of message
-#define codeword_length 16 //the length of codeword
+#define message_length 7 //the length of message
+#define codeword_length 14 //the length of codeword
 float code_rate = (float)message_length / (float)codeword_length;
 
 // channel coefficient
 #define pi 3.1415926
 double N0, sgm;
 
-
 int state_table[8][4];//state table, the size should be defined yourself
 int state_num;//the number of the state of encoder structure
 
-int message[]={0,1,1,0,0,1,0,0};
+int message[]={0,1,1,0,1,0,0};
 int codeword[codeword_length];//message and codeword
-int re_codeword[codeword_length];//the received codeword
+// int re_codeword[codeword_length];//the received codeword
+int re_codeword[]={0,0,1,1,1,1,0,1,0,0,1,0,1,1};
 int de_message[message_length];//the decoding message
 
 double tx_symbol[codeword_length][2];//the transmitted symbols
@@ -62,7 +61,14 @@ int  main()
 	double progress;
 
 	//generate state table //生成状态表？？？
-	//statetable();
+	statetable();
+	cout<<"state table"<<endl;
+	for(int i=0;i<8;i++)
+	{
+		for(int j=0;j<4;j++)
+			cout<<setw(2)<<state_table[i][j]<<" ";
+		cout<<endl;
+	}
 
 	//random seed
 	srand((int)time(0));
@@ -75,11 +81,50 @@ int  main()
 	// printf("\nPlease input the number of message: ");
 	// scanf("%d", &seq_num);
 
+// 测试验证代码区块
 #define TEST
 #ifdef TEST
+//编码
+	//encoder();
+	cout<<"message:";
+	for(int i=0;i<message_length;i++)
+	{
+		cout<<message[i];
+	}
+	cout<<endl;
+	cout<<"codeword:";
+	for(int i=0;i<codeword_length;i++)
+	{
+		cout<<codeword[i];
+	}
+	cout<<endl;
+	//调制
+	//信道
+	// for(int i=0;i<codeword_length;i++)
+	// {
+	// 	re_codeword[i]=codeword[i];	
+	// }
+	cout<<"re_codeword:";
+	for(int i=0;i<codeword_length;i++)
+	{
+		cout<<re_codeword[i];
+	}
+	cout<<endl;
+	//解调
+	decoder();
+	//译码
+	cout<<"de_message:";
+	for(int i=0;i<message_length;i++)
+	{
+		cout<<de_message[i];
+	}
+	cout<<endl;
+
+
 #endif
 
-#define START_EMUM
+// 仿真代码区块
+//#define START_EMUM
 #ifdef START_EMUM
 	for (SNR = start; SNR <= finish; SNR++)
 	{
@@ -97,7 +142,7 @@ int  main()
 			//generate binary message randomly
 			/****************
 			Pay attention that message is appended by 0 whose number is equal to the state of encoder structure.
-			****************/
+			****************/ //补零的个数等于寄存器个数
 
 			// 有补零操作
 			for (i = 0; i<message_length - state_num; i++)
@@ -120,7 +165,7 @@ int  main()
 			channel();
 
 			//BPSK demodulation, it's needed in hard-decision Viterbi decoder
-			//demodulation();
+			demodulation();
 
 			//卷积码译码，我们自己写
 			//convolutional decoder
@@ -153,7 +198,7 @@ int  main()
 	}
 #endif
 
-	system("pause");
+	//system("pause");
 	return 0;
 }
 
@@ -173,10 +218,10 @@ void statetable()
 	int table[8][4]={
 	{0,0b00,0b00,0b00},
 	{1,0b00,0b10,0b11},
-	{0,0b01,0b00,0b11},
-	{1,0b01,0b10,0b00},
-	{0,0b10,0b01,0b10},
-	{1,0b10,0b11,0b01},
+	{0,0b01,0b10,0b00},
+	{1,0b01,0b00,0b11},
+	{0,0b10,0b11,0b01},
+	{1,0b10,0b01,0b10},
 	{0,0b11,0b01,0b01},
 	{1,0b11,0b11,0b10}
 	};
@@ -221,7 +266,7 @@ void encoder()
 		default:
 			break;
 		}
-		cout<<current_state<<endl;
+		//cout<<current_state<<endl;
 		codeword[2*i]=current_output[0];
 		codeword[2*i+1]=current_output[1];
 	}
@@ -312,8 +357,12 @@ void decoder()
 	int inf=2*message_length+1;
 	int path_metrics_table[4][message_length+1]; //累计距离矩阵
 	int trellis_trans_ID_table[4][message_length]; 	//ID记录矩阵
+	int branch_metrics_table[8][message_length];
 	//初始化累计错误全部设成无穷
-	for(int i=0;i<4;i++){for(int j=0;j<message_length+1;j++) path_metrics_table[i][j]=inf;}
+	for(int i=0;i<4;i++){
+		for(int j=0;j<message_length+1;j++) 
+			path_metrics_table[i][j]=inf;
+	}
 	//初始化刚开始的00节点的累计是0
 	path_metrics_table[0][0]=0;
 
@@ -321,31 +370,69 @@ void decoder()
 
 	//decode！
 	//按接收符号两个两个来比较
+	
 	for(int i=0;i<message_length;i++)
 	{
-		int rx_bit=re_codeword[2*i+1]<<1+re_codeword[2*i];//组装成一个数
+		int rx_bit=(re_codeword[2*i]<<1)+re_codeword[2*i+1];//组装成一个数
+		
 		for(int id=0;id<8;id++) 	//8条边按顺序比较，把结果放在下一个节点上，值小的放上去
 		{
-			int next_node=state_table[id][2];
-			int this_path_output=state_table[id][3];
-			int dist=compare(this_path_output,rx_bit);
-
-			if(dist<path_metrics_table[next_node][i+1]) //当前的距离小于终点节点上已有的距离
+			int this_node=state_table[id][1];
+			int next_node=state_table[id][2]; //该id的边的终点节点
+			int this_path_output=state_table[id][3]; //该id的边的输出结果
+			int dist=compare(this_path_output,rx_bit); //比较得出距离
+			branch_metrics_table[id][i]=dist;
+			if(path_metrics_table[this_node][i]+dist<path_metrics_table[next_node][i+1]) //当前的距离小于终点节点上已有的距离
 			{
-				path_metrics_table[next_node][i+1]=dist;
-				trellis_trans_ID_table[next_node][i]=id;
+				path_metrics_table[next_node][i+1]=path_metrics_table[this_node][i]+dist; //在终点节点上记录目前的距离
+				trellis_trans_ID_table[next_node][i]=id; //记录该层的来源边的ID
 			}
 		}
 	}
+	//输出 branch metrics table
+	cout<<endl;
+	cout<<"branch metrics table"<<endl;
+	for(int i=0;i<8;i++)
+	{
+		for(int j=0;j<message_length;j++)
+			cout<<setw(2)<<branch_metrics_table[i][j]<<" ";
+		cout<<endl;
+	}
+
+	//输出 path metrics table
+	cout<<endl;
+	cout<<"path metrics table"<<endl;
+	for(int i=0;i<4;i++)
+	{
+		for(int j=0;j<message_length+1;j++)
+			cout<<setw(2)<<path_metrics_table[i][j]<<" ";
+		cout<<endl;
+	}
+
+	//输出 trellis trans ID table
+	cout<<endl;
+	cout<<"trellis trans ID table"<<endl;
+	for(int i=0;i<4;i++)
+	{
+		for(int j=0;j<message_length;j++)
+			cout<<setw(2)<<trellis_trans_ID_table[i][j]<<" ";
+		cout<<endl;
+	}
+
+		
 
 	int current_trans_ID;
 	int current_node=0x00;
 	//从最后一个00开始回溯
-	for(int i=message_length-1;i>0;i--)
+	for(int i=message_length-1;i>=0;i--)
 	{
 		current_trans_ID=trellis_trans_ID_table[current_node][i];
+
+		//cout<<"current transition ID"<<current_trans_ID<<endl;
+		//cout<<"current_node"<<current_node<<endl;
+
 		de_message[i]=state_table[current_trans_ID][0]; //当前ID对应的输入
-		current_node=state_table[current_trans_ID][1]; //当前ID的起始点	
+		current_node=state_table[current_trans_ID][1]; //更新当前ID的起始点	
 	}
 
 
@@ -359,18 +446,15 @@ void decoder()
 	//2,4 10 B
 	//6,8 11 D
 
-
 }
 
-int compare(int ID/*比较的ID*/,int rx/*被比较的符号*/)
+int compare(int output/*比较的ID的output*/,int rx/*被比较的符号*/)
 {
-	switch (state_table[ID][3]^rx)
+	switch (output^rx)
 	{
 		case 0b00 :return 0;
 		case 0b01:return 1;
 		case 0b10:return 1;
 		case 0b11:return 2;
 	}
-
-
 }
