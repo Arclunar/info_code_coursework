@@ -1,3 +1,4 @@
 /home/anifan/Info_code_ws/build/CMakeFiles/rebuild_cache.dir
-/home/anifan/Info_code_ws/build/CMakeFiles/main.dir
 /home/anifan/Info_code_ws/build/CMakeFiles/edit_cache.dir
+/home/anifan/Info_code_ws/build/CMakeFiles/main.dir
+/home/anifan/Info_code_ws/build/CMakeFiles/main2.dir

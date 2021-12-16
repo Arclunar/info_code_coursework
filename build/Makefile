@@ -123,6 +123,19 @@ main/fast:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
 .PHONY : main/fast
 
+#=============================================================================
+# Target rules for targets named main2
+
+# Build rule for target.
+main2: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 main2
+.PHONY : main2
+
+# fast build rule for target.
+main2/fast:
+	$(MAKE) -f CMakeFiles/main2.dir/build.make CMakeFiles/main2.dir/build
+.PHONY : main2/fast
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -150,6 +163,33 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+main2.o: main2.cpp.o
+
+.PHONY : main2.o
+
+# target to build an object file
+main2.cpp.o:
+	$(MAKE) -f CMakeFiles/main2.dir/build.make CMakeFiles/main2.dir/main2.cpp.o
+.PHONY : main2.cpp.o
+
+main2.i: main2.cpp.i
+
+.PHONY : main2.i
+
+# target to preprocess a source file
+main2.cpp.i:
+	$(MAKE) -f CMakeFiles/main2.dir/build.make CMakeFiles/main2.dir/main2.cpp.i
+.PHONY : main2.cpp.i
+
+main2.s: main2.cpp.s
+
+.PHONY : main2.s
+
+# target to generate assembly for a file
+main2.cpp.s:
+	$(MAKE) -f CMakeFiles/main2.dir/build.make CMakeFiles/main2.dir/main2.cpp.s
+.PHONY : main2.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -157,11 +197,15 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
-	@echo "... main"
 	@echo "... edit_cache"
+	@echo "... main"
+	@echo "... main2"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... main2.o"
+	@echo "... main2.i"
+	@echo "... main2.s"
 .PHONY : help
 
 

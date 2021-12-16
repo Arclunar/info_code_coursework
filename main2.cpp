@@ -3,12 +3,18 @@ Channel Coding Course Work: conolutional codes
 This program template has given the message generator, BPSK modulation, AWGN channel model and BPSK demodulation,
 you should first determine the encoder structure, then define the message and codeword length, generate the state table, write the convolutional encoder and decoder.
  
-
+Viterbi soft decision
 written by : anifan @SYSU
 date : 2021 Sept 16.
 
 If you have any question, please contact me via e-mail: wuchy28@mail2.sysu.edu.cn
 ***************************************************/
+
+// 
+// 编码、调制、信道不变
+// 收到符号 double rx_symbol[codeword_length][2];
+// 原来的compare变成计算欧式距离
+// 后面不变
 
 
 // 包含各种库
@@ -54,17 +60,20 @@ void channel();
 void decoder();
 
 // 自定义函数
-int compare(int output/*比较的输出*/,int rx/*被比较的符号*/);
+double compare(int output/*比较的输出*/,double rx_symbol[2]/*被比较的符号*/,double [2]);
 
 int  main()
 {
 	int i;
 	float SNR, start, finish; // 一开始程序读入
+    start=0;
+    finish=10;
 	long int bit_error, seq, seq_num;
+    seq_num=10E6;
 	double BER;
 	double progress;
 
-	//generate state table //生成状态表？？？
+	//generate state table //生成状态
 	statetable();
 	cout<<"state table"<<endl;
 	for(int i=0;i<8;i++)
@@ -83,10 +92,11 @@ int  main()
 	// printf("\nEnter finish SNR: ");
 	// scanf("%f", &finish);
 	// printf("\nPlease input the number of message: ");
-	// scanf("%d", &seq_num);
+	// scanf("%ld", &seq_num);
+    // cout<<"seq_num:"<<seq_num<<endl;
 
 // 测试验证代码区块
-#define TEST
+//#define TEST
 #ifdef TEST
 //编码
 	for (i = 0; i<message_length - state_num; i++)
@@ -144,8 +154,12 @@ int  main()
 
 #endif
 
+long bit_errors[10];
+double BERs[10];
+int count=0;
+
 // 仿真代码区块
-//#define START_EMUM
+#define START_EMUM
 #ifdef START_EMUM
 	for (SNR = start; SNR <= finish; SNR++)
 	{
@@ -174,7 +188,9 @@ int  main()
 			{
 				message[i] = 0;
 			}
-
+            
+            // for(int i=0;i<message_length;i++) cout<<message[i];
+            // cout<<endl;
 			//卷积码编码，我们自己写
 			//convolutional encoder
 			encoder();
@@ -186,7 +202,7 @@ int  main()
 			channel();
 
 			//BPSK demodulation, it's needed in hard-decision Viterbi decoder
-			demodulation();
+			//demodulation();
 
 			//卷积码译码，我们自己写
 			//convolutional decoder
@@ -209,6 +225,7 @@ int  main()
 
 			//print the intermediate result
 			printf("Progress=%2.1f, SNR=%2.1f, Bit Errors=%2.1d, BER=%E\r", progress, SNR, bit_error, BER);
+            //printf("Progress=%2.1f\r",progress);
 		}
 
 		//calculate the BER
@@ -216,6 +233,9 @@ int  main()
 
 		//print the final result
 		printf("Progress=%2.1f, SNR=%2.1f, Bit Errors=%2.1d, BER=%E\n", progress, SNR, bit_error, BER);
+
+        bit_errors[count]=bit_error;
+        BERs[count]=BER;
 	}
 #endif
 
@@ -375,10 +395,10 @@ void decoder()
 	//难题是，怎么判断该边是否存在
 	//解决方法：全部节点的累计初始值都射程郑无穷，并且计算到最后的时候直接铲到最后以列，从00的位置开始回溯即可
 	//但是仍然第一列还是要特殊处理以下
-	int inf=2*message_length+1;
-	int path_metrics_table[4][message_length+1]; //累计距离矩阵
+	double inf=100;
+	double path_metrics_table[4][message_length+1]; //累计距离矩阵
 	int trellis_trans_ID_table[4][message_length]; 	//ID记录矩阵
-	int branch_metrics_table[8][message_length];
+	double branch_metrics_table[8][message_length];
 	//初始化累计错误全部设成无穷
 	for(int i=0;i<4;i++){
 		for(int j=0;j<message_length+1;j++) 
@@ -400,14 +420,19 @@ void decoder()
 	
 	for(int i=0;i<message_length;i++)
 	{
-		int rx_bit=(re_codeword[2*i]<<1)+re_codeword[2*i+1];//组装成一个数
+        double rx_sym_1[2];
+        double rx_sym_2[2];
+        rx_sym_1[0]=rx_symbol[2*i][0];
+        rx_sym_1[1]=rx_symbol[2*i][1];
+        rx_sym_2[0]=rx_symbol[2*i+1][0];
+        rx_sym_2[1]=rx_symbol[2*i+1][1];
 		
 		for(int id=0;id<8;id++) 	//8条边按顺序比较，把结果放在下一个节点上，值小的放上去
 		{
 			int this_node=state_table[id][1];
 			int next_node=state_table[id][2]; //该id的边的终点节点
 			int this_path_output=state_table[id][3]; //该id的边的输出结果
-			int dist=compare(this_path_output,rx_bit); //比较得出距离
+			double dist=compare(this_path_output,rx_sym_1,rx_sym_2); //比较得出距离
 			branch_metrics_table[id][i]=dist;
 			if(path_metrics_table[this_node][i]+dist<path_metrics_table[next_node][i+1]) //当前的距离小于终点节点上已有的距离
 			{
@@ -417,34 +442,34 @@ void decoder()
 		}
 	}
 	//输出 branch metrics table
-	cout<<endl;
-	cout<<"branch metrics table"<<endl;
-	for(int i=0;i<8;i++)
-	{
-		for(int j=0;j<message_length;j++)
-			cout<<setw(2)<<branch_metrics_table[i][j]<<" ";
-		cout<<endl;
-	}
+	// cout<<endl;
+	// cout<<"branch metrics table"<<endl;
+	// for(int i=0;i<8;i++)
+	// {
+	// 	for(int j=0;j<message_length;j++)
+	// 		cout<<setw(2)<<branch_metrics_table[i][j]<<" ";
+	// 	cout<<endl;
+	// }
 
 	//输出 path metrics table
-	cout<<endl;
-	cout<<"path metrics table"<<endl;
-	for(int i=0;i<4;i++)
-	{
-		for(int j=0;j<message_length+1;j++)
-			cout<<setw(2)<<path_metrics_table[i][j]<<" ";
-		cout<<endl;
-	}
+	// cout<<endl;
+	// cout<<"path metrics table"<<endl;
+	// for(int i=0;i<4;i++)
+	// {
+	// 	for(int j=0;j<message_length+1;j++)
+	// 		cout<<setw(2)<<path_metrics_table[i][j]<<" ";
+	// 	cout<<endl;
+	// }
 
 	//输出 trellis trans ID table
-	cout<<endl;
-	cout<<"trellis trans ID table"<<endl;
-	for(int i=0;i<4;i++)
-	{
-		for(int j=0;j<message_length;j++)
-			cout<<setw(2)<<trellis_trans_ID_table[i][j]<<" ";
-		cout<<endl;
-	}
+	// cout<<endl;
+	// cout<<"trellis trans ID table"<<endl;
+	// for(int i=0;i<4;i++)
+	// {
+	// 	for(int j=0;j<message_length;j++)
+	// 		cout<<setw(2)<<trellis_trans_ID_table[i][j]<<" ";
+	// 	cout<<endl;
+	// }
 
 		
 
@@ -458,26 +483,35 @@ void decoder()
 		current_node=state_table[current_trans_ID][1]; //更新当前ID的起始点	
 	}
 
-
-
-	//累计错误的矩阵
-	//每个节点有固定的两个来源边，计算这些边的前面节点以及该边与接收符号的差值之和，取小值放在下一个节点
-	//ID对应关系
-	//边ID 终点节点
-	//1，3 00 A
-	//5，7 01 C
-	//2,4 10 B
-	//6,8 11 D
-
 }
 
-int compare(int output/*比较的ID的output*/,int rx/*被比较的符号*/)
+double compare(int output/*比较的ID的output*/,double rx_sym_1[2],double rx_sym_2[2]/*被比较的符号*/)
 {
-	switch (output^rx)
-	{
-		case 0b00 :return 0;
-		case 0b01:return 1;
-		case 0b10:return 1;
-		case 0b11:return 2;
-	}
+    double d1,d2;
+    switch(output){
+        case 0b00 : 
+        d1 = sqrt((rx_sym_1[0] - 1)*(rx_sym_1[0] - 1) + rx_sym_1[1] * rx_sym_1[1]);
+		d2 = sqrt((rx_sym_2[0] - 1)*(rx_sym_2[0] - 1 ) + rx_sym_2[1] * rx_sym_2[1]);
+        return d1+d2;
+        break;
+
+        case 0b01 : 
+        d1 = sqrt((rx_sym_1[0] - 1)*(rx_sym_1[0] - 1) + rx_sym_1[1] * rx_sym_1[1]);
+		d2 = sqrt((rx_sym_2[0] + 1)*(rx_sym_2[0] + 1) + rx_sym_2[1] * rx_sym_2[1]);
+        return d1+d2;
+        break;
+
+        case 0b10 : 
+        d1 = sqrt((rx_sym_1[0] + 1)*(rx_sym_1[0] + 1) + rx_sym_1[1] * rx_sym_1[1]);
+		d2 = sqrt((rx_sym_2[0] - 1)*(rx_sym_2[0] - 1) + rx_sym_2[1] * rx_sym_2[1]);
+        return d1+d2;
+        break;
+
+        case 0b11 : 
+        d1 = sqrt((rx_sym_1[0] + 1)*(rx_sym_1[0] + 1) + rx_sym_1[1] * rx_sym_1[1]);
+		d2 = sqrt((rx_sym_2[0] + 1)*(rx_sym_2[0] + 1) + rx_sym_2[1] * rx_sym_2[1]);
+        return d1+d2;
+        break;
+        
+    }
 }

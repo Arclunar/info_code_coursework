@@ -8,4 +8,5 @@ set(CMAKE_BUILD_TYPE Debug)
 
 # 可执行文件
 add_executable(main main.cpp)
+add_executable(main2 main2.cpp)
 
