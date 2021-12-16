@@ -5,7 +5,7 @@ coursework for the course information theory and coding.
 hard decision Viterbi decoder finished and tested in the mtkl simulation. <br />
 soft decision Viterbi decoder has finished and tested in the mtkl simulation.
 
-filename:
+filename:<br />
 main.cpp —— hard decision Viterbi decoder <br />
 main2.cpp —— soft decision Viterbi decoder <br />
 CmakeLists —— cmake file <br />
