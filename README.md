@@ -6,9 +6,9 @@ hard decision Viterbi decoder finished and tested in the mtkl simulation.
 soft decision Viterbi decoder has finished and tested in the mtkl simulation.
 
 filename:
-main.cpp —— hard decision Viterbi decoder
-main2.cpp —— soft decision Viterbi decoder
-CmakeLists —— cmake file
-
+main.cpp —— hard decision Viterbi decoder <br />
+main2.cpp —— soft decision Viterbi decoder <br />
+CmakeLists —— cmake file <br />
+<br />
 directory:
 build —— build files.
