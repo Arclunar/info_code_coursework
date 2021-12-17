@@ -97,13 +97,50 @@ clean: CMakeFiles/main.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/main0.dir
+
+# All Build rule for target.
+CMakeFiles/main0.dir/all:
+	$(MAKE) -f CMakeFiles/main0.dir/build.make CMakeFiles/main0.dir/depend
+	$(MAKE) -f CMakeFiles/main0.dir/build.make CMakeFiles/main0.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/anifan/Info_code_ws/build/CMakeFiles --progress-num=3,4 "Built target main0"
+.PHONY : CMakeFiles/main0.dir/all
+
+# Include target in all.
+all: CMakeFiles/main0.dir/all
+
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/main0.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/anifan/Info_code_ws/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/main0.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/anifan/Info_code_ws/build/CMakeFiles 0
+.PHONY : CMakeFiles/main0.dir/rule
+
+# Convenience name for target.
+main0: CMakeFiles/main0.dir/rule
+
+.PHONY : main0
+
+# clean rule for target.
+CMakeFiles/main0.dir/clean:
+	$(MAKE) -f CMakeFiles/main0.dir/build.make CMakeFiles/main0.dir/clean
+.PHONY : CMakeFiles/main0.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/main0.dir/clean
+
+.PHONY : clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/main2.dir
 
 # All Build rule for target.
 CMakeFiles/main2.dir/all:
 	$(MAKE) -f CMakeFiles/main2.dir/build.make CMakeFiles/main2.dir/depend
 	$(MAKE) -f CMakeFiles/main2.dir/build.make CMakeFiles/main2.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/anifan/Info_code_ws/build/CMakeFiles --progress-num=3,4 "Built target main2"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/anifan/Info_code_ws/build/CMakeFiles --progress-num=5,6 "Built target main2"
 .PHONY : CMakeFiles/main2.dir/all
 
 # Include target in all.

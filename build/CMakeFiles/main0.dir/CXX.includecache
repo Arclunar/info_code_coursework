@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/anifan/Info_code_ws/main0.cpp
+stdio.h
+-
+stdlib.h
+-
+time.h
+-
+math.h
+-
+iomanip
+-
+

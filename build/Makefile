@@ -124,6 +124,19 @@ main/fast:
 .PHONY : main/fast
 
 #=============================================================================
+# Target rules for targets named main0
+
+# Build rule for target.
+main0: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 main0
+.PHONY : main0
+
+# fast build rule for target.
+main0/fast:
+	$(MAKE) -f CMakeFiles/main0.dir/build.make CMakeFiles/main0.dir/build
+.PHONY : main0/fast
+
+#=============================================================================
 # Target rules for targets named main2
 
 # Build rule for target.
@@ -163,6 +176,33 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+main0.o: main0.cpp.o
+
+.PHONY : main0.o
+
+# target to build an object file
+main0.cpp.o:
+	$(MAKE) -f CMakeFiles/main0.dir/build.make CMakeFiles/main0.dir/main0.cpp.o
+.PHONY : main0.cpp.o
+
+main0.i: main0.cpp.i
+
+.PHONY : main0.i
+
+# target to preprocess a source file
+main0.cpp.i:
+	$(MAKE) -f CMakeFiles/main0.dir/build.make CMakeFiles/main0.dir/main0.cpp.i
+.PHONY : main0.cpp.i
+
+main0.s: main0.cpp.s
+
+.PHONY : main0.s
+
+# target to generate assembly for a file
+main0.cpp.s:
+	$(MAKE) -f CMakeFiles/main0.dir/build.make CMakeFiles/main0.dir/main0.cpp.s
+.PHONY : main0.cpp.s
+
 main2.o: main2.cpp.o
 
 .PHONY : main2.o
@@ -199,10 +239,14 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... main"
+	@echo "... main0"
 	@echo "... main2"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... main0.o"
+	@echo "... main0.i"
+	@echo "... main0.s"
 	@echo "... main2.o"
 	@echo "... main2.i"
 	@echo "... main2.s"

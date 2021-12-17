@@ -26,8 +26,8 @@ If you have any question, please contact me via e-mail: wuchy28@mail2.sysu.edu.c
 using namespace std;
 
 
-#define message_length 20 //the length of message
-#define codeword_length 40 //the length of codeword
+#define message_length 3000 //the length of message
+#define codeword_length 6000 //the length of codeword
 float code_rate = (float)message_length / (float)codeword_length;
 
 // channel coefficient
@@ -215,7 +215,7 @@ int  main(int argc,char ** argv)
 
 			//print the intermediate result
 			printf("Progress=%2.1f, SNR=%2.1f, Bit Errors=%2.1d, BER=%E\r", progress, SNR, bit_error, BER);
-			if(bit_error>100000)
+			if(bit_error>200000)
 			{
 				BER = (double)bit_error / (double)(message_length*seq);
 				break;

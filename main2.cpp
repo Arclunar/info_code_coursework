@@ -32,8 +32,8 @@ If you have any question, please contact me via e-mail: wuchy28@mail2.sysu.edu.c
 using namespace std;
 
 
-#define message_length 40 //the length of message
-#define codeword_length 80 //the length of codeword
+#define message_length 3000 //the length of message
+#define codeword_length 6000 //the length of codeword
 float code_rate = (float)message_length / (float)codeword_length;
 
 // channel coefficient
@@ -126,15 +126,15 @@ int  main(int argc,char* argv[])
 	modulation();
 
 	//信道
-	SNR=0.1;
+	SNR=10;
 	//channel noise
 	N0 = (1.0 / code_rate) / pow(10.0, (float)(SNR) / 10.0);
 	sgm = sqrt(N0 / 2);
 	channel();
-	// for(int i=0;i<codeword_length;i++)
-	// {
-	// 	re_codeword[i]=codeword[i];	
-	// }
+	for(long i=0;i<codeword_length;i++)
+	{
+		re_codeword[i]=codeword[i];	
+	}
 
 	cout<<endl;
 	//解调
@@ -144,25 +144,36 @@ int  main(int argc,char* argv[])
 	{
 		cout<<re_codeword[i];
 	}
+	cout<<endl;
+
 	//译码
 	decoder();
-	cout<<"de_message:";
-	for(int i=0;i<message_length;i++)
+	// cout<<"de_message:";
+	// for(int i=0;i<message_length;i++)
+	// {
+	// 	cout<<de_message[i];
+	// }
+	// cout<<endl;
+
+	bit_error=0;
+	for (int i = 0; i<message_length; i++)
 	{
-		cout<<de_message[i];
+		if (message[i] != de_message[i])
+			bit_error++;
 	}
-	cout<<endl;
+	cout<<"bit error: "<<bit_error<<endl;
 
 
 #endif
 
-long bit_errors[10];
-double BERs[10];
-int count=0;
+
 
 // 仿真代码区块
 #define START_EMUM
 #ifdef START_EMUM
+	long bit_errors[10];
+	double BERs[10];
+	int count=0;
 	for (SNR = start; SNR <= finish; SNR++)
 	{
 		//channel noise
@@ -400,15 +411,15 @@ void decoder()
 	//一个累计距离，另一个记录ID
 	//不能取的边（无穷大）用2*message_length+1代替，因为绝对不能可能错的比本身的长度还大
 	//难题是，怎么判断该边是否存在
-	//解决方法：全部节点的累计初始值都射程郑无穷，并且计算到最后的时候直接铲到最后以列，从00的位置开始回溯即可
+	//解决方法：全部节点的累计初始值都射程正无穷，并且计算到最后的时候直接铲到最后以列，从00的位置开始回溯即可
 	//但是仍然第一列还是要特殊处理以下
-	double inf=100;
+	double inf=100000;
 	double path_metrics_table[4][message_length+1]; //累计距离矩阵
 	int trellis_trans_ID_table[4][message_length]; 	//ID记录矩阵
 	double branch_metrics_table[8][message_length];
 	//初始化累计错误全部设成无穷
 	for(int i=0;i<4;i++){
-		for(int j=0;j<message_length+1;j++) 
+		for(long j=0;j<message_length+1;j++) 
 			path_metrics_table[i][j]=inf;
 	}
 	//初始化刚开始的00节点的累计是0
@@ -416,7 +427,7 @@ void decoder()
 
 	//初始化边矩阵
 		for(int i=0;i<4;i++){
-		for(int j=0;j<message_length;j++) 
+		for(long j=0;j<message_length;j++) 
 			trellis_trans_ID_table[i][j]=inf;
 	}
 
@@ -425,7 +436,7 @@ void decoder()
 	//decode！
 	//按接收符号两个两个来比较
 	
-	for(int i=0;i<message_length;i++)
+	for(long i=0;i<message_length;i++)
 	{
         double rx_sym_1[2];
         double rx_sym_2[2];
@@ -458,7 +469,7 @@ void decoder()
 	// 	cout<<endl;
 	// }
 
-	//输出 path metrics table
+	// 输出 path metrics table
 	// cout<<endl;
 	// cout<<"path metrics table"<<endl;
 	// for(int i=0;i<4;i++)
@@ -483,7 +494,7 @@ void decoder()
 	int current_trans_ID;
 	int current_node=0x00;
 	//从最后一个00开始回溯
-	for(int i=message_length-1;i>=0;i--)
+	for(long i=message_length-1;i>=0;i--)
 	{
 		current_trans_ID=trellis_trans_ID_table[current_node][i];
 		de_message[i]=state_table[current_trans_ID][0]; //当前ID对应的输入
