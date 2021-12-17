@@ -32,8 +32,8 @@ If you have any question, please contact me via e-mail: wuchy28@mail2.sysu.edu.c
 using namespace std;
 
 
-#define message_length 10 //the length of message
-#define codeword_length 20 //the length of codeword
+#define message_length 40 //the length of message
+#define codeword_length 80 //the length of codeword
 float code_rate = (float)message_length / (float)codeword_length;
 
 // channel coefficient
@@ -62,26 +62,28 @@ void decoder();
 // 自定义函数
 double compare(int output/*比较的输出*/,double rx_symbol[2]/*被比较的符号*/,double [2]);
 
-int  main()
+int  main(int argc,char* argv[])
 {
 	int i;
 	float SNR, start, finish; // 一开始程序读入
-    start=0;
-    finish=10;
-	long int bit_error, seq, seq_num;
-    seq_num=10E6;
-	double BER;
+    long int bit_error, seq, seq_num;
+    double BER;
 	double progress;
+
+    start=atof(argv[1]);
+    finish=atof(argv[2]);
+    seq_num=atol(argv[3]);
+
 
 	//generate state table //生成状态
 	statetable();
-	cout<<"state table"<<endl;
-	for(int i=0;i<8;i++)
-	{
-		for(int j=0;j<4;j++)
-			cout<<setw(2)<<state_table[i][j]<<" ";
-		cout<<endl;
-	}
+	// cout<<"state table"<<endl;
+	// for(int i=0;i<8;i++)
+	// {
+	// 	for(int j=0;j<4;j++)
+	// 		cout<<setw(2)<<state_table[i][j]<<" ";
+	// 	cout<<endl;
+	// }
 
 	//random seed
 	srand((int)time(0));
@@ -226,10 +228,15 @@ int count=0;
 			//print the intermediate result
 			printf("Progress=%2.1f, SNR=%2.1f, Bit Errors=%2.1d, BER=%E\r", progress, SNR, bit_error, BER);
             //printf("Progress=%2.1f\r",progress);
+			if(bit_error>=100000)
+			{
+				BER = (double)bit_error / (double)(message_length*seq);
+				break;
+			}
 		}
 
 		//calculate the BER
-		BER = (double)bit_error / (double)(message_length*seq_num);
+		//BER = (double)bit_error / (double)(message_length*seq_num);
 
 		//print the final result
 		printf("Progress=%2.1f, SNR=%2.1f, Bit Errors=%2.1d, BER=%E\n", progress, SNR, bit_error, BER);
