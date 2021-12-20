@@ -7,7 +7,7 @@ project(CourseWork)
 set(CMAKE_BUILD_TYPE Debug)
 
 # 可执行文件
-add_executable(main main.cpp)
-add_executable(main2 main2.cpp)
-add_executable(main0 main0.cpp)
-
+add_executable(Viterbi_hard Viterbi_hard.cpp)
+add_executable(Viterbi_soft Viterbi_soft.cpp)
+add_executable(uncoded uncoded.cpp)
+add_executable(BCJR BCJR.cpp)
