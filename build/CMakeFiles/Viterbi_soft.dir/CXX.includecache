@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/anifan/Info_code_ws/Viterbi_soft.cpp
+stdio.h
+-
+stdlib.h
+-
+time.h
+-
+math.h
+-
+string
+-
+string.h
+-
+iostream
+-
+limits.h
+-
+iomanip
+-
+

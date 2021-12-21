@@ -11,17 +11,36 @@ If you have any question, please contact me via e-mail: wuchy28@mail2.sysu.edu.c
 #include<stdlib.h>
 #include<time.h>
 #include<math.h>
-
+#include<iostream>
+#include<iomanip>
 #define message_length 1000 //the length of message
-#define codeword_length 2000 //the length of codeword
+#define codeword_length 2000 //the length of 
+
+#define tran_input 0
+#define tran_begin 1
+#define tran_end 2
+#define tran_output 3
+//调试编译标志
+
+#define SIMULATION
+
+// #define DEBUG
+#ifdef DEBUG
+#define TEST
+#define OUTPUTGAMMA
+#define OUTPUTA
+#define OUTPUTB
+#endif
 float code_rate = (float)message_length / (float)codeword_length;
 
 // channel coefficient
 #define pi 3.1415926
+using namespace std;
+
 double N0, sgm;
 
 int state_table[8][4];//state table, the size should be defined yourself
-int state_num;//the number of the state of encoder structure
+int state_num=2;//the number of the state of encoder structure
 
 int message[message_length], codeword[codeword_length];//message and codeword
 int re_codeword[codeword_length];//the received codeword
@@ -37,13 +56,15 @@ void demodulation();
 void channel();
 void decoder();
 
-void main()
+int main(int argc,char** argv)
 {
 	int i;
 	float SNR, start, finish;
 	long int bit_error, seq, seq_num;
 	double BER;
 	double progress;
+
+
 
 	//generate state table
 	statetable();
@@ -52,13 +73,77 @@ void main()
 	srand((int)time(0));
 
 	//input the SNR and frame number
-	printf("\nEnter start SNR: ");
-	scanf("%f", &start);
-	printf("\nEnter finish SNR: ");
-	scanf("%f", &finish);
-	printf("\nPlease input the number of message: ");
-	scanf("%d", &seq_num);
+	// printf("\nEnter start SNR: ");
+	// scanf("%f", &start);
+	// printf("\nEnter finish SNR: ");
+	// scanf("%f", &finish);
+	// printf("\nPlease input the number of message: ");
+	// scanf("%d", &seq_num);
 
+//#define TEST
+#ifdef TEST
+//编码
+	for (i = 0; i<message_length - state_num; i++)
+	{
+		message[i] = rand() % 2;
+	}
+	for (i = message_length - state_num; i<message_length; i++)
+	{
+		message[i] = 0;
+	}
+
+	cout<<"message:";
+	for(int i=0;i<message_length;i++) cout<<message[i];
+	cout<<endl;
+
+	encoder();
+
+	cout<<"codeword:";
+	for(int i=0;i<codeword_length;i++)
+	{
+		cout<<codeword[i];
+	}
+	cout<<endl;
+	//调制
+	modulation();
+
+	//信道
+	SNR=10;
+	//channel noise
+	N0 = (1.0 / code_rate) / pow(10.0, (float)(SNR) / 10.0);
+	sgm = sqrt(N0 / 2);
+	channel();
+	// for(int i=0;i<codeword_length;i++)
+	// {
+	// 	for(int j=0;j<2;j++)
+	// 		rx_symbol[i][j]=tx_symbol[i][j];
+	// }
+
+	cout<<endl;
+	//解调
+	//demodulation();
+	// cout<<"re_codeword:";
+	// for(int i=0;i<codeword_length;i++)
+	// {
+	// 	cout<<re_codeword[i];
+	// }
+	//译码
+	decoder();
+	cout<<"de_message:";
+	for(int i=0;i<message_length;i++)
+	{
+		cout<<de_message[i];
+	}
+	cout<<endl;
+
+
+#endif
+
+// #define SIMULATION
+#ifdef SIMULATION
+	start=atof(argv[1]);
+    finish=atof(argv[2]);
+    seq_num=atol(argv[3]);
 	for (SNR = start; SNR <= finish; SNR++)
 	{
 		//channel noise
@@ -111,15 +196,22 @@ void main()
 
 			//print the intermediate result
 			printf("Progress=%2.1f, SNR=%2.1f, Bit Errors=%2.1d, BER=%E\r", progress, SNR, bit_error, BER);
+			if(bit_error>200)
+			{
+				BER = (double)bit_error / (double)(message_length*seq);
+				break;
+			}
 		}
 
 		//calculate the BER
-		BER = (double)bit_error / (double)(message_length*seq_num);
+		//BER = (double)bit_error / (double)(message_length*seq_num);
 
 		//print the final result
 		printf("Progress=%2.1f, SNR=%2.1f, Bit Errors=%2.1d, BER=%E\n", progress, SNR, bit_error, BER);
 	}
-	system("pause");
+#endif
+	//system("pause");
+	return 0;
 }
 void statetable()
 {
@@ -151,6 +243,39 @@ void statetable()
 void encoder()
 {
 	//convolution encoder, the input is message[] and the output is codeword[]
+	int current_output[2];
+
+	//记录目前状态
+	//enum state {A,B,C,D};  // A:00 B:10 C:01 D:11
+	int current_state=0b00;
+	for(int i=0;i<message_length;i++)
+	{
+		switch (current_state)
+		{
+		case 0b00:
+			if(message[i]==0) {current_state=0b00; current_output[0]=0;current_output[1]=0;}
+			else {current_state=0b10; current_output[0]=1;current_output[1]=1;}
+			break;
+		case 0b01:
+			if(message[i]==0) {current_state=0b00; current_output[0]=1;current_output[1]=1;}
+			else {current_state=0b10; current_output[0]=0;current_output[1]=0;}
+			break;
+		case 0b10:
+			if(message[i]==0) {current_state=0b01; current_output[0]=1;current_output[1]=0;}
+			else {current_state=0b11; current_output[0]=0;current_output[1]=1;}
+			break;
+		case 0b11:
+			if(message[i]==0) {current_state=0b01; current_output[0]=0;current_output[1]=1;}
+			else {current_state=0b11; current_output[0]=1;current_output[1]=0;}
+			break;
+		default:
+			break;
+		}
+		//cout<<current_state<<endl;
+		codeword[2*i]=current_output[0];
+		codeword[2*i+1]=current_output[1];
+	}
+	
 }
 
 void modulation()
@@ -225,17 +350,38 @@ void decoder()
     {   
         for(int j=0;j<2;j++)
         {
-        // c_t'1 t'时刻第一个符号
-        // yt-s2
-        double yt_s0 = (rx_symbol[2*i+j][0] - 1)*(rx_symbol[2*i+j][0] - 1) + rx_symbol[2*i+j][1] * rx_symbol[2*i][1];
+		//t'时刻第j+1个符号
+        // c_t'1 
+
+        // yt-s0 和0对应的符号的距离平方
+        double yt_s0 = (rx_symbol[2*i+j][0] - 1)*(rx_symbol[2*i+j][0] - 1) + rx_symbol[2*i+j][1] * rx_symbol[2*i+j][1];
          // Pch(c=0)
-         // c_t'2 t'时刻第二个符号
+		//  cout<<"rx_symbol[2*i+j][0]="<<rx_symbol[2*i+j][0]<<endl;
+		//  cout<<"rx_symbol[2*i+j][1]="<<rx_symbol[2*i+j][1]<<endl;
+		//  cout<<"yt_s0 "<<yt_s0<<endl;
+        
         Pch[i][j][0]=1/sqrt(pi*N0)*exp((-1)*yt_s0/N0);
-        // Pch(c=1)
-        double yt_s1 = (rx_symbol[2*i+j][0] + 1)*(rx_symbol[2*i+j][0] + 1) + rx_symbol[2*i+j][1] * rx_symbol[2*i][1];
-        Pch[i][j][1]=1/sqrt(pi*N0)*exp((-1)*yt_s1/N0);
+
+		// yt-s1 和1对应的符号的距离平方
+        double yt_s1 = (rx_symbol[2*i+j][0] + 1)*(rx_symbol[2*i+j][0] + 1) + rx_symbol[2*i+j][1] * rx_symbol[2*i+j][1];
+        
+		// Pch(c=1)
+		Pch[i][j][1]=1/sqrt(pi*N0)*exp((-1)*yt_s1/N0);
         }
     }
+	// cout<<endl;
+	// cout<<"Pch"<<endl;
+	// for(int i=0;i<message_length;i++)
+	// {
+	// 	for(int j=0;j<2;j++)
+	// 	{
+	// 		for(int k=0;k<2;k++)
+	// 			cout<<fixed<<setprecision(2)<<Pch[i][j][k]<<"  ";
+	// 		cout<<endl;
+	// 	}
+	// }
+	// cout<<endl;
+
 
     // 状态转移概率 gamma
     // 第1维 时刻
@@ -250,11 +396,27 @@ void decoder()
         double Pa=0.5;
         for(int j=0;j<8;j++)
         {
-            first=state_table[j][3]>>1; // 输出的第一个符号
-            second=state_table[j][3]%2; // 输出的第二个符号
+            first=state_table[j][tran_output]>>1; // 输出的第一个符号
+            second=state_table[j][tran_output]%2; // 输出的第二个符号
             state_trans_prob[i][j]=Pa*Pch[i][0][first]*Pch[i][1][second];
+			
         }
     }
+
+
+#ifdef OUTPUTGAMMA
+
+	//输出信道观察看看
+	cout<<endl;
+	cout<<"Gamma:"<<endl;
+	for(int i=0;i<8;i++)
+	{
+		for(int j=0;j<message_length;j++)
+			cout<<setprecision(3)<<state_trans_prob[j][i]<<" ";
+		cout<<endl;
+	}
+	cout<<endl;
+#endif
 
     // Probability of beginning a trellis trasition
     double begin_prob[4][message_length+1];
@@ -269,10 +431,12 @@ void decoder()
         {
             
             begin_prob[i][j]=0;
+			end_prob[i][j]=0;
             node_available[i][j]=true;
         }
     }
     begin_prob[0b00][0]=1; // 第一个00点概率为1
+	end_prob[0b00][message_length]=1; //最后一个00点的作为结尾的概率是1
     //开头
     //第一列
     node_available[0b01][0]=false;
@@ -291,5 +455,114 @@ void decoder()
     node_available[0b11][message_length]=false;
     
     
-    // 
+
+    // 开始计算A
+	for(int i=1;i<message_length+1;i++)
+	{
+		for(int node=0;node<4;node++)
+		{
+			double sum=0;
+			for(int tran_ID=0;tran_ID<8;tran_ID++)
+			{
+				// 如果边的输出为当前结点，且边的起点是合法的
+				int begin_node=state_table[tran_ID][tran_begin];
+				int end_node=state_table[tran_ID][tran_end];
+				if(end_node==node && node_available[begin_node][i-1]==true && node_available[end_node][i]==true)
+					{
+						//加上起点结点作为起点的概率 * 这条边的信道观察
+						sum+=begin_prob[begin_node][i-1]*state_trans_prob[i-1][tran_ID];
+					}
+			}
+			begin_prob[node][i]=sum;
+		}
+		//归一化
+		double sum_prob =0;
+		for(int node=0;node<4;node++)
+		{
+			sum_prob+=begin_prob[node][i]; //计算分母
+		}
+		for(int node=0;node<4;node++)
+		{
+			begin_prob[node][i]=begin_prob[node][i]/sum_prob;
+		}
+	}
+
+#ifdef OUTPUTA
+	//输出A看看
+	cout<<endl;
+	cout<<"A:"<<endl;
+	for(int i=0;i<4;i++)
+	{
+		for(int j=0;j<message_length+1;j++)
+			cout<<fixed<<begin_prob[i][j]<<"  ";
+		cout<<endl;
+	}
+	cout<<endl;
+#endif
+
+	//计算B
+	for(int i=message_length-1;i>=0;i--) //从倒数第二列开始 最后一列的索引是message_length
+	{
+		for(int node=0;node<4;node++)
+		{
+			double sum=0;
+			for(int tran_ID=0;tran_ID<8;tran_ID++)
+			{
+				int begin_node = state_table[tran_ID][tran_begin];
+				int end_node=state_table[tran_ID][tran_end];
+				if(begin_node==node && node_available[end_node][i+1]==true && node_available[begin_node][i]==true)
+				{
+					sum+=end_prob[end_node][i+1]*state_trans_prob[i][tran_ID];
+				}
+			}
+			end_prob[node][i]=sum;
+		}
+		//归一化
+		double sum_prob=0;
+		for(int node=0;node<4;node++)
+			sum_prob+=end_prob[node][i];
+		for(int node=0;node<4;node++)
+			end_prob[node][i]=end_prob[node][i]/sum_prob;
+	}
+
+#ifdef OUTPUTB
+	//输出B看看
+	cout<<endl;
+	cout<<"B:"<<endl;
+	for(int i=0;i<4;i++)
+	{
+		for(int j=0;j<message_length+1;j++)
+			cout<<fixed<<end_prob[i][j]<<"  ";
+		cout<<endl;
+	}
+	cout<<endl;
+#endif
+
+	//开始判断
+	for(int i=0;i<message_length;i++)
+	{
+		//索引为0 2 4 6是输入0
+		//索引为1 3 5 7是输入1
+		//罗马尼亚国旗
+		//计算0的概率
+		double P_is0=0;
+		double P_is1=0;
+		int begin_node;
+		int end_node;
+		for(int tran_ID=0;tran_ID<8;tran_ID+=2)
+		{
+			begin_node=state_table[tran_ID][tran_begin];
+			end_node=state_table[tran_ID][tran_end];
+			P_is0+=begin_prob[begin_node][i]*state_trans_prob[i][tran_ID]*end_prob[end_node][i+1];
+		}
+		for(int tran_ID=1;tran_ID<8;tran_ID+=2)
+		{
+			begin_node=state_table[tran_ID][tran_begin];
+			end_node=state_table[tran_ID][tran_end];
+			P_is1+=begin_prob[begin_node][i]*state_trans_prob[i][tran_ID]*end_prob[end_node][i+1];
+		}
+		if(P_is0>P_is1) de_message[i]=0;
+		else de_message[i]=1;
+	}
+
 }

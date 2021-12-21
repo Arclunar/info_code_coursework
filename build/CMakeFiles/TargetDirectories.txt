@@ -1,5 +1,6 @@
 /home/anifan/Info_code_ws/build/CMakeFiles/rebuild_cache.dir
+/home/anifan/Info_code_ws/build/CMakeFiles/uncoded.dir
 /home/anifan/Info_code_ws/build/CMakeFiles/edit_cache.dir
-/home/anifan/Info_code_ws/build/CMakeFiles/main.dir
-/home/anifan/Info_code_ws/build/CMakeFiles/main0.dir
-/home/anifan/Info_code_ws/build/CMakeFiles/main2.dir
+/home/anifan/Info_code_ws/build/CMakeFiles/BCJR.dir
+/home/anifan/Info_code_ws/build/CMakeFiles/Viterbi_hard.dir
+/home/anifan/Info_code_ws/build/CMakeFiles/Viterbi_soft.dir

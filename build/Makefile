@@ -111,124 +111,164 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named main
+# Target rules for targets named uncoded
 
 # Build rule for target.
-main: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 main
-.PHONY : main
+uncoded: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 uncoded
+.PHONY : uncoded
 
 # fast build rule for target.
-main/fast:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
-.PHONY : main/fast
+uncoded/fast:
+	$(MAKE) -f CMakeFiles/uncoded.dir/build.make CMakeFiles/uncoded.dir/build
+.PHONY : uncoded/fast
 
 #=============================================================================
-# Target rules for targets named main0
+# Target rules for targets named BCJR
 
 # Build rule for target.
-main0: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 main0
-.PHONY : main0
+BCJR: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 BCJR
+.PHONY : BCJR
 
 # fast build rule for target.
-main0/fast:
-	$(MAKE) -f CMakeFiles/main0.dir/build.make CMakeFiles/main0.dir/build
-.PHONY : main0/fast
+BCJR/fast:
+	$(MAKE) -f CMakeFiles/BCJR.dir/build.make CMakeFiles/BCJR.dir/build
+.PHONY : BCJR/fast
 
 #=============================================================================
-# Target rules for targets named main2
+# Target rules for targets named Viterbi_hard
 
 # Build rule for target.
-main2: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 main2
-.PHONY : main2
+Viterbi_hard: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 Viterbi_hard
+.PHONY : Viterbi_hard
 
 # fast build rule for target.
-main2/fast:
-	$(MAKE) -f CMakeFiles/main2.dir/build.make CMakeFiles/main2.dir/build
-.PHONY : main2/fast
+Viterbi_hard/fast:
+	$(MAKE) -f CMakeFiles/Viterbi_hard.dir/build.make CMakeFiles/Viterbi_hard.dir/build
+.PHONY : Viterbi_hard/fast
 
-main.o: main.cpp.o
+#=============================================================================
+# Target rules for targets named Viterbi_soft
 
-.PHONY : main.o
+# Build rule for target.
+Viterbi_soft: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 Viterbi_soft
+.PHONY : Viterbi_soft
 
-# target to build an object file
-main.cpp.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.o
-.PHONY : main.cpp.o
+# fast build rule for target.
+Viterbi_soft/fast:
+	$(MAKE) -f CMakeFiles/Viterbi_soft.dir/build.make CMakeFiles/Viterbi_soft.dir/build
+.PHONY : Viterbi_soft/fast
 
-main.i: main.cpp.i
+BCJR.o: BCJR.cpp.o
 
-.PHONY : main.i
-
-# target to preprocess a source file
-main.cpp.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.i
-.PHONY : main.cpp.i
-
-main.s: main.cpp.s
-
-.PHONY : main.s
-
-# target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.s
-.PHONY : main.cpp.s
-
-main0.o: main0.cpp.o
-
-.PHONY : main0.o
+.PHONY : BCJR.o
 
 # target to build an object file
-main0.cpp.o:
-	$(MAKE) -f CMakeFiles/main0.dir/build.make CMakeFiles/main0.dir/main0.cpp.o
-.PHONY : main0.cpp.o
+BCJR.cpp.o:
+	$(MAKE) -f CMakeFiles/BCJR.dir/build.make CMakeFiles/BCJR.dir/BCJR.cpp.o
+.PHONY : BCJR.cpp.o
 
-main0.i: main0.cpp.i
+BCJR.i: BCJR.cpp.i
 
-.PHONY : main0.i
+.PHONY : BCJR.i
 
 # target to preprocess a source file
-main0.cpp.i:
-	$(MAKE) -f CMakeFiles/main0.dir/build.make CMakeFiles/main0.dir/main0.cpp.i
-.PHONY : main0.cpp.i
+BCJR.cpp.i:
+	$(MAKE) -f CMakeFiles/BCJR.dir/build.make CMakeFiles/BCJR.dir/BCJR.cpp.i
+.PHONY : BCJR.cpp.i
 
-main0.s: main0.cpp.s
+BCJR.s: BCJR.cpp.s
 
-.PHONY : main0.s
+.PHONY : BCJR.s
 
 # target to generate assembly for a file
-main0.cpp.s:
-	$(MAKE) -f CMakeFiles/main0.dir/build.make CMakeFiles/main0.dir/main0.cpp.s
-.PHONY : main0.cpp.s
+BCJR.cpp.s:
+	$(MAKE) -f CMakeFiles/BCJR.dir/build.make CMakeFiles/BCJR.dir/BCJR.cpp.s
+.PHONY : BCJR.cpp.s
 
-main2.o: main2.cpp.o
+Viterbi_hard.o: Viterbi_hard.cpp.o
 
-.PHONY : main2.o
+.PHONY : Viterbi_hard.o
 
 # target to build an object file
-main2.cpp.o:
-	$(MAKE) -f CMakeFiles/main2.dir/build.make CMakeFiles/main2.dir/main2.cpp.o
-.PHONY : main2.cpp.o
+Viterbi_hard.cpp.o:
+	$(MAKE) -f CMakeFiles/Viterbi_hard.dir/build.make CMakeFiles/Viterbi_hard.dir/Viterbi_hard.cpp.o
+.PHONY : Viterbi_hard.cpp.o
 
-main2.i: main2.cpp.i
+Viterbi_hard.i: Viterbi_hard.cpp.i
 
-.PHONY : main2.i
+.PHONY : Viterbi_hard.i
 
 # target to preprocess a source file
-main2.cpp.i:
-	$(MAKE) -f CMakeFiles/main2.dir/build.make CMakeFiles/main2.dir/main2.cpp.i
-.PHONY : main2.cpp.i
+Viterbi_hard.cpp.i:
+	$(MAKE) -f CMakeFiles/Viterbi_hard.dir/build.make CMakeFiles/Viterbi_hard.dir/Viterbi_hard.cpp.i
+.PHONY : Viterbi_hard.cpp.i
 
-main2.s: main2.cpp.s
+Viterbi_hard.s: Viterbi_hard.cpp.s
 
-.PHONY : main2.s
+.PHONY : Viterbi_hard.s
 
 # target to generate assembly for a file
-main2.cpp.s:
-	$(MAKE) -f CMakeFiles/main2.dir/build.make CMakeFiles/main2.dir/main2.cpp.s
-.PHONY : main2.cpp.s
+Viterbi_hard.cpp.s:
+	$(MAKE) -f CMakeFiles/Viterbi_hard.dir/build.make CMakeFiles/Viterbi_hard.dir/Viterbi_hard.cpp.s
+.PHONY : Viterbi_hard.cpp.s
+
+Viterbi_soft.o: Viterbi_soft.cpp.o
+
+.PHONY : Viterbi_soft.o
+
+# target to build an object file
+Viterbi_soft.cpp.o:
+	$(MAKE) -f CMakeFiles/Viterbi_soft.dir/build.make CMakeFiles/Viterbi_soft.dir/Viterbi_soft.cpp.o
+.PHONY : Viterbi_soft.cpp.o
+
+Viterbi_soft.i: Viterbi_soft.cpp.i
+
+.PHONY : Viterbi_soft.i
+
+# target to preprocess a source file
+Viterbi_soft.cpp.i:
+	$(MAKE) -f CMakeFiles/Viterbi_soft.dir/build.make CMakeFiles/Viterbi_soft.dir/Viterbi_soft.cpp.i
+.PHONY : Viterbi_soft.cpp.i
+
+Viterbi_soft.s: Viterbi_soft.cpp.s
+
+.PHONY : Viterbi_soft.s
+
+# target to generate assembly for a file
+Viterbi_soft.cpp.s:
+	$(MAKE) -f CMakeFiles/Viterbi_soft.dir/build.make CMakeFiles/Viterbi_soft.dir/Viterbi_soft.cpp.s
+.PHONY : Viterbi_soft.cpp.s
+
+uncoded.o: uncoded.cpp.o
+
+.PHONY : uncoded.o
+
+# target to build an object file
+uncoded.cpp.o:
+	$(MAKE) -f CMakeFiles/uncoded.dir/build.make CMakeFiles/uncoded.dir/uncoded.cpp.o
+.PHONY : uncoded.cpp.o
+
+uncoded.i: uncoded.cpp.i
+
+.PHONY : uncoded.i
+
+# target to preprocess a source file
+uncoded.cpp.i:
+	$(MAKE) -f CMakeFiles/uncoded.dir/build.make CMakeFiles/uncoded.dir/uncoded.cpp.i
+.PHONY : uncoded.cpp.i
+
+uncoded.s: uncoded.cpp.s
+
+.PHONY : uncoded.s
+
+# target to generate assembly for a file
+uncoded.cpp.s:
+	$(MAKE) -f CMakeFiles/uncoded.dir/build.make CMakeFiles/uncoded.dir/uncoded.cpp.s
+.PHONY : uncoded.cpp.s
 
 # Help Target
 help:
@@ -237,19 +277,23 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
+	@echo "... uncoded"
 	@echo "... edit_cache"
-	@echo "... main"
-	@echo "... main0"
-	@echo "... main2"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
-	@echo "... main0.o"
-	@echo "... main0.i"
-	@echo "... main0.s"
-	@echo "... main2.o"
-	@echo "... main2.i"
-	@echo "... main2.s"
+	@echo "... BCJR"
+	@echo "... Viterbi_hard"
+	@echo "... Viterbi_soft"
+	@echo "... BCJR.o"
+	@echo "... BCJR.i"
+	@echo "... BCJR.s"
+	@echo "... Viterbi_hard.o"
+	@echo "... Viterbi_hard.i"
+	@echo "... Viterbi_hard.s"
+	@echo "... Viterbi_soft.o"
+	@echo "... Viterbi_soft.i"
+	@echo "... Viterbi_soft.s"
+	@echo "... uncoded.o"
+	@echo "... uncoded.i"
+	@echo "... uncoded.s"
 .PHONY : help
 
 

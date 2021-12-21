@@ -1,0 +1,1 @@
+/usr/bin/c++  -g  -rdynamic CMakeFiles/Viterbi_soft.dir/Viterbi_soft.cpp.o  -o Viterbi_soft 
