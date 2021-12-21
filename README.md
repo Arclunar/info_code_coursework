@@ -1,7 +1,7 @@
 # info_code_coursework
 coursework for the course information theory and coding.
 
-## 2021年12月16日 
+## 2021.12.6
 hard decision Viterbi decoder finished and tested in the mtkl simulation. <br />
 soft decision Viterbi decoder has finished and tested in the mtkl simulation.
 
