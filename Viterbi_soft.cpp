@@ -58,6 +58,8 @@ void modulation();
 void demodulation();
 void channel();
 void decoder();
+int s0=0;
+int s1=0;
 
 // 自定义函数
 double compare(int output/*比较的输出*/,double rx_symbol[2]/*被比较的符号*/,double [2]);
@@ -239,6 +241,8 @@ int  main(int argc,char* argv[])
 			//print the intermediate result
 			printf("Progress=%2.1f, SNR=%2.1f, Bit Errors=%2.1d, BER=%E\r", progress, SNR, bit_error, BER);
             //printf("Progress=%2.1f\r",progress);
+
+			// 中断控制
 			if(bit_error>=100000)
 			{
 				BER = (double)bit_error / (double)(message_length*seq);
@@ -261,35 +265,84 @@ int  main(int argc,char* argv[])
 	return 0;
 }
 
+
+// 编码器结构
+void encode_bit(int bit,int i)
+{
+
+	
+}
+
 //function ： statetable
 //description ： 初始化statetable[][]
 //input : void 
 //output : void 
 void statetable()
 {
-	//映射关系
+	//自动生成状态表
+	//75
+	for(int state=0b00;state<=0b11;state++)
+	{
+		for(int input=0;input<=1;input++)
+		{
+		//第一列 输入
+		state_table[state*2+input][0]=input; 
+
+		//第二列 起始状态
+		state_table[state*2+input][1]=state; 
+
+		//输入起始状态进寄存器
+		s0=(state>>1)%2;
+		s1=state%2;
+		
+		//第三列 下一状态
+		state_table[state*2+input][2]=input*2+s0;
+
+		//第四列 根据编码器的结构设计输出
+		state_table[state*2+input][3]=((input+s0+s1)%2)*2+(input+s1)%2;
+
+
+		}
+	}
+	s0=0;s1=0;
+
+	for(int i=0;i<8;i++)
+	{
+		for(int j=0;j<4;j++)
+		{
+			cout<<state_table[i][j]<<" ";
+		}
+		cout<<endl;
+	}
+
+
+	//映射关系 （7，5）码
 	//0：00/A， 1：01/B 2：10/C 3：11/D
 	//第一列 输入 
 	//第二列 起始点 
 	//第三列 终点 
 	//第四列 输出值 
 	//
-	int table[8][4]={
-	{0,0b00,0b00,0b00},
-	{1,0b00,0b10,0b11},
-	{0,0b01,0b00,0b11},
-	{1,0b01,0b10,0b00},
-	{0,0b10,0b01,0b10},
-	{1,0b10,0b11,0b01},
-	{0,0b11,0b01,0b01},
-	{1,0b11,0b11,0b10}
-	};
-	for(int i=0;i<8;i++)
-	{
-		for(int j=0;j<4;j++)
-			state_table[i][j]=table[i][j];
-	}
+	// int table[8][4]={
+	// {0,0b00,0b00,0b00},
+	// {1,0b00,0b10,0b11},
+	// {0,0b01,0b00,0b11},
+	// {1,0b01,0b10,0b00},
+	// {0,0b10,0b01,0b10},
+	// {1,0b10,0b11,0b01},
+	// {0,0b11,0b01,0b01},
+	// {1,0b11,0b11,0b10}
+	// };
+	// for(int i=0;i<8;i++)
+	// {
+	// 	for(int j=0;j<4;j++)
+	// 		state_table[i][j]=table[i][j];
+	// }
 }		
+
+
+
+
 
 //function ： encoder
 //description ： 卷积码编码
@@ -297,6 +350,25 @@ void statetable()
 //output : void 但将结果写出到 tx_symbol
 void encoder()
 {	
+	//使用编码器结构的方法
+
+	for(int i=0;i<message_length;i++)
+	{
+		//c1
+		codeword[2*i]=(message[i]+s0+s1)%2;
+		//c2
+		codeword[2*i+1]=(message[i]+s1)%2;
+		s1=s0;
+		s0=message[i];
+	}
+
+
+
+
+//#define STATE_DIAGRAM
+#ifdef STATE_DIAGRAM
+
+	// 使用状态图的方法
 	int current_output[2];
 
 	//记录目前状态
@@ -330,7 +402,7 @@ void encoder()
 		codeword[2*i+1]=current_output[1];
 	}
 	
-
+#endif //STATE_DIAGRAM
 }
 
 
@@ -384,6 +456,7 @@ void channel()
 //description ： 解调，对接收信号进行判决
 //input : void 但利用全局变量 rx_symbol
 //output : void 但将结果写入全局变量 re_codeword
+//软判决不需要
 void demodulation()
 {
 	int i;
@@ -401,7 +474,7 @@ void demodulation()
 	}
 }
 
-//function ： channel
+//function ： decoder
 //description ： 发送信号加上随机高斯白噪声得到接收信号
 //input : void 但利用全局变量 tx_symbol
 //output : void 但将结果写入全局变量 rx_symbol
@@ -409,14 +482,14 @@ void decoder()
 { 
 	//用到两个矩阵
 	//一个累计距离，另一个记录ID
-	//不能取的边（无穷大）用2*message_length+1代替，因为绝对不能可能错的比本身的长度还大
+	//不能取的边（无穷大）用inf代替，因为绝对不能可能错的比本身的长度还大
 	//难题是，怎么判断该边是否存在
-	//解决方法：全部节点的累计初始值都射程正无穷，并且计算到最后的时候直接铲到最后以列，从00的位置开始回溯即可
+	//解决方法：全部节点的累计初始值都设成正无穷，并且计算到最后的时候直接铲到最后以列，从00的位置开始回溯即可
 	//但是仍然第一列还是要特殊处理以下
 	double inf=100000;
 	double path_metrics_table[4][message_length+1]; //累计距离矩阵
 	int trellis_trans_ID_table[4][message_length]; 	//ID记录矩阵
-	double branch_metrics_table[8][message_length];
+	double branch_metrics_table[8][message_length]; //边距离矩阵
 	//初始化累计错误全部设成无穷
 	for(int i=0;i<4;i++){
 		for(long j=0;j<message_length+1;j++) 
@@ -426,9 +499,15 @@ void decoder()
 	path_metrics_table[0][0]=0;
 
 	//初始化边矩阵
-		for(int i=0;i<4;i++){
+	//为正无穷
+	for(int i=0;i<4;i++){
 		for(long j=0;j<message_length;j++) 
 			trellis_trans_ID_table[i][j]=inf;
+	}
+
+	for(int i=0;i<8;i++){
+		for(long j=0;j<message_length;j++) 
+			branch_metrics_table[i][j]=inf;
 	}
 
 
@@ -445,13 +524,15 @@ void decoder()
         rx_sym_2[0]=rx_symbol[2*i+1][0];
         rx_sym_2[1]=rx_symbol[2*i+1][1];
 		
-		for(int id=0;id<8;id++) 	//8条边按顺序比较，把结果放在下一个节点上，值小的放上去
+		for(int id=0;id<8;id++) 	//8条边按ID顺序比较，把结果放在下一个节点上，值小的放上去
 		{
 			int this_node=state_table[id][1];
 			int next_node=state_table[id][2]; //该id的边的终点节点
 			int this_path_output=state_table[id][3]; //该id的边的输出结果
-			double dist=compare(this_path_output,rx_sym_1,rx_sym_2); //比较得出距离
+
+			double dist=compare(this_path_output,rx_sym_1,rx_sym_2); //比较得出欧式距离
 			branch_metrics_table[id][i]=dist;
+
 			if(path_metrics_table[this_node][i]+dist<path_metrics_table[next_node][i+1]) //当前的距离小于终点节点上已有的距离
 			{
 				path_metrics_table[next_node][i+1]=path_metrics_table[this_node][i]+dist; //在终点节点上记录目前的距离
@@ -459,6 +540,10 @@ void decoder()
 			}
 		}
 	}
+	
+	{
+
+	
 	//输出 branch metrics table
 	// cout<<endl;
 	// cout<<"branch metrics table"<<endl;
@@ -489,10 +574,10 @@ void decoder()
 	// 	cout<<endl;
 	// }
 
-		
+		}
 
 	int current_trans_ID;
-	int current_node=0x00;
+	int current_node=0b00;
 	//从最后一个00开始回溯
 	for(long i=message_length-1;i>=0;i--)
 	{
@@ -532,4 +617,6 @@ double compare(int output/*比较的ID的output*/,double rx_sym_1[2],double rx_s
         break;
         
     }
+
+	return 1000000;
 }

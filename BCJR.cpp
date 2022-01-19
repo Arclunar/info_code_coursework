@@ -13,15 +13,18 @@ If you have any question, please contact me via e-mail: wuchy28@mail2.sysu.edu.c
 #include<math.h>
 #include<iostream>
 #include<iomanip>
-#define message_length 1000 //the length of message
-#define codeword_length 2000 //the length of 
+#define message_length 3000 //the length of message
+#define codeword_length 6000 //the length of codeword
 
+
+//状态图映射
 #define tran_input 0
 #define tran_begin 1
 #define tran_end 2
 #define tran_output 3
-//调试编译标志
 
+
+//调试编译标志
 #define SIMULATION
 
 // #define DEBUG
@@ -31,6 +34,8 @@ If you have any question, please contact me via e-mail: wuchy28@mail2.sysu.edu.c
 #define OUTPUTA
 #define OUTPUTB
 #endif
+
+//计算码率
 float code_rate = (float)message_length / (float)codeword_length;
 
 // channel coefficient
@@ -158,13 +163,14 @@ int main(int argc,char** argv)
 			/****************
 			Pay attention that message is appended by 0 whose number is equal to the state of encoder structure.
 			****************/
+			//随机生成信息向量
 			for (i = 0; i<message_length - state_num; i++)
 			{
 				message[i] = rand() % 2;
 			}
 			for (i = message_length - state_num; i<message_length; i++)
 			{
-				message[i] = 0;
+				message[i] = 0;  //补零
 			}
 
 			//convolutional encoder
@@ -196,7 +202,7 @@ int main(int argc,char** argv)
 
 			//print the intermediate result
 			printf("Progress=%2.1f, SNR=%2.1f, Bit Errors=%2.1d, BER=%E\r", progress, SNR, bit_error, BER);
-			if(bit_error>200)
+			if(bit_error>10000)
 			{
 				BER = (double)bit_error / (double)(message_length*seq);
 				break;
@@ -216,13 +222,12 @@ int main(int argc,char** argv)
 void statetable()
 {
 
-	//映射关系
+	//映射关系 7/5码
 	//0：00/A， 1：01/B 2：10/C 3：11/D
 	//第一列 输入 
 	//第二列 起始点 
 	//第三列 终点 
 	//第四列 输出值 
-	//
 	int table[8][4]={
 	{0,0b00,0b00,0b00},
 	{1,0b00,0b10,0b11},
@@ -341,16 +346,17 @@ void decoder()
     // 码率 0.5
     // 计算 信道观察
     
+	// 信道观察矩阵
     // 三维数组，每个接收符号有一个0的信道观察和1的信道观察
     // 第1维 ： 第t'时刻
     // 第2维 ： 该时刻的第1/2个码元符号
-    // 第3维 ： 关于0/1的信道观察
+    // 第3维 ： 相对于0/1的信道观察
     double Pch[message_length][2][2];
     for(int i=0;i<message_length;i++)
     {   
         for(int j=0;j<2;j++)
         {
-		//t'时刻第j+1个符号
+		//t'时刻第j+1个符号 也就是1和2啦
         // c_t'1 
 
         // yt-s0 和0对应的符号的距离平方
@@ -359,12 +365,10 @@ void decoder()
 		//  cout<<"rx_symbol[2*i+j][0]="<<rx_symbol[2*i+j][0]<<endl;
 		//  cout<<"rx_symbol[2*i+j][1]="<<rx_symbol[2*i+j][1]<<endl;
 		//  cout<<"yt_s0 "<<yt_s0<<endl;
-        
         Pch[i][j][0]=1/sqrt(pi*N0)*exp((-1)*yt_s0/N0);
 
 		// yt-s1 和1对应的符号的距离平方
         double yt_s1 = (rx_symbol[2*i+j][0] + 1)*(rx_symbol[2*i+j][0] + 1) + rx_symbol[2*i+j][1] * rx_symbol[2*i+j][1];
-        
 		// Pch(c=1)
 		Pch[i][j][1]=1/sqrt(pi*N0)*exp((-1)*yt_s1/N0);
         }
@@ -381,7 +385,6 @@ void decoder()
 	// 	}
 	// }
 	// cout<<endl;
-
 
     // 状态转移概率 gamma
     // 第1维 时刻
@@ -464,7 +467,7 @@ void decoder()
 			double sum=0;
 			for(int tran_ID=0;tran_ID<8;tran_ID++)
 			{
-				// 如果边的输出为当前结点，且边的起点是合法的
+				// 如果边的输出为当前结点，且边的起点和当前结点是合法的
 				int begin_node=state_table[tran_ID][tran_begin];
 				int end_node=state_table[tran_ID][tran_end];
 				if(end_node==node && node_available[begin_node][i-1]==true && node_available[end_node][i]==true)
@@ -483,7 +486,7 @@ void decoder()
 		}
 		for(int node=0;node<4;node++)
 		{
-			begin_prob[node][i]=begin_prob[node][i]/sum_prob;
+			begin_prob[node][i]=begin_prob[node][i]/sum_prob; //分子除以分母
 		}
 	}
 
@@ -549,12 +552,15 @@ void decoder()
 		double P_is1=0;
 		int begin_node;
 		int end_node;
+
+		//ID是偶数的是输入0对应的边
 		for(int tran_ID=0;tran_ID<8;tran_ID+=2)
 		{
 			begin_node=state_table[tran_ID][tran_begin];
 			end_node=state_table[tran_ID][tran_end];
 			P_is0+=begin_prob[begin_node][i]*state_trans_prob[i][tran_ID]*end_prob[end_node][i+1];
 		}
+		//ID是奇数的是输入1对应的边
 		for(int tran_ID=1;tran_ID<8;tran_ID+=2)
 		{
 			begin_node=state_table[tran_ID][tran_begin];
